@@ -84,54 +84,62 @@ export const problem = {
   ],
 }
 
-export const features = {
+// The post-job flow chart. Steps sharing a number play at the same time.
+export const featureFlow = {
   eyebrow: 'What V1 does',
   title: 'Everything that happens after the job is done.',
-  description: 'One place for your customers, your jobs and the follow-up that turns finished work into reviews.',
-  items: [
-    {
-      key: 'customers',
-      title: 'Customer management',
-      description: 'Every customer, contact detail and job history in one place.',
-      span: 2,
+  subtitle: 'One click from you. The rest runs automatically.',
+  closing: 'That’s it. Reviews and repeat business, on autopilot.',
+  automaticLabel: 'Automatic',
+  manualLabel: 'You do this',
+  replayLabel: 'Replay',
+  nodes: {
+    added: {
+      step: 0,
+      title: 'Job added',
+      description: 'Customer and service details saved.',
     },
-    {
-      key: 'jobs',
-      title: 'Job and service tracking',
-      description: 'Track each job and the services it covers, from first contact to final walkthrough.',
-      span: 2,
+    completed: {
+      step: 1,
+      title: 'Job completed',
+      description: 'You mark the job as completed.',
     },
-    {
-      key: 'complete',
-      title: 'Job completion confirmation',
-      description: 'Mark a job complete and keep a clear record that the work is done.',
-      span: 2,
+    confirmed: {
+      step: 2,
+      title: 'Completion confirmed',
+      description: 'The job is confirmed and the automation starts.',
     },
-    {
-      key: 'reviewRequests',
-      title: 'Automated SMS and email review requests',
-      description: 'Review requests go out on their own once a job is marked completed.',
-      span: 3,
+    sms: {
+      step: 3,
+      title: 'SMS review request',
+      description: 'Sent automatically to the customer.',
     },
-    {
-      key: 'reviews',
+    email: {
+      step: 3,
+      title: 'Email review request',
+      description: 'Sent automatically to the customer.',
+    },
+    followUp: {
+      step: 4,
+      title: 'Automated follow-up',
+      description: 'A follow-up goes out if the customer hasn’t left a review.',
+    },
+    received: {
+      step: 5,
+      title: 'Review received',
+      description: 'A new review appears in your dashboard.',
+    },
+    manage: {
+      step: 6,
       title: 'Review management',
-      description: 'See incoming reviews and keep every response in one view.',
-      span: 3,
+      description: 'See and manage all your reviews in one place.',
     },
-    {
-      key: 'followUps',
-      title: 'Automated customer follow-ups',
-      description: 'Follow-ups run on the schedule you set, with no manual reminders.',
-      span: 3,
+    repeat: {
+      step: 7,
+      title: 'Repeat business',
+      description: 'Reach past customers with SMS and email marketing campaigns.',
     },
-    {
-      key: 'campaigns',
-      title: 'Customer marketing campaigns',
-      description: 'Send campaigns to past customers straight from your customer list.',
-      span: 3,
-    },
-  ],
+  },
 }
 
 export const howItWorks = {

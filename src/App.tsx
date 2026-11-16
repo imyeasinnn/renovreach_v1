@@ -15,7 +15,7 @@ import { Pricing } from './sections/Pricing'
 import { Problem } from './sections/Problem'
 import { Showcase } from './sections/Showcase'
 
-const HOME_TITLE = 'RenovReach | Turn Completed Jobs Into Reviews & Repeat Business'
+const HOME_TITLE = 'RenovReach | Customer engagement & reputation management for service businesses'
 
 // Small path map instead of a router dependency: each page is a full
 // navigation, and Vercel's rewrite (vercel.json) serves index.html on refresh.
