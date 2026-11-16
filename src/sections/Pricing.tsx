@@ -66,6 +66,23 @@ export function Pricing() {
 
         <Reveal delay={0.08}>
           <p className="mt-6 text-center text-[13px] text-muted">{pricing.note}</p>
+          <p className="mt-2 text-center text-[12.5px] text-muted">
+            See our{' '}
+            <a
+              href="/terms"
+              className="font-medium text-accent-ink underline decoration-accent/40 underline-offset-2 transition-colors hover:text-accent-deep"
+            >
+              Terms
+            </a>{' '}
+            and{' '}
+            <a
+              href="/refund-policy"
+              className="font-medium text-accent-ink underline decoration-accent/40 underline-offset-2 transition-colors hover:text-accent-deep"
+            >
+              Refund &amp; Cancellation Policy
+            </a>
+            .
+          </p>
 
           <div className="mx-auto mt-8 flex max-w-[740px] gap-3 rounded-[14px] border border-line bg-surface-2 p-4 sm:p-5">
             <Info className="mt-0.5 size-4 shrink-0 text-accent-ink" strokeWidth={1.9} />

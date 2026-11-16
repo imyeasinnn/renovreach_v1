@@ -21,9 +21,24 @@ export function LogoSlot({ className }: { className?: string }) {
 
 // Replace /public/brand/logo-mark.svg (or the src below) with your own file to
 // swap the mark. The name is kept beside it because the mark has no wordmark.
-export function Logo({ className, large = false }: { className?: string; large?: boolean }) {
+export function Logo({
+  className,
+  large = false,
+  home = true,
+  tone = 'light',
+}: {
+  className?: string
+  large?: boolean
+  home?: boolean
+  // The footer sits on green-black, so the wordmark switches to off-white there.
+  tone?: 'light' | 'dark'
+}) {
   return (
-    <a href="#" aria-label={`${brand.name} home`} className={cx('inline-flex items-center gap-2.5 text-fg', className)}>
+    <a
+      href={home ? '#' : '/'}
+      aria-label={`${brand.name} home`}
+      className={cx('inline-flex items-center gap-2.5', tone === 'dark' ? 'text-white' : 'text-fg', className)}
+    >
       <img
         src="/brand/logo-mark.svg"
         alt=""

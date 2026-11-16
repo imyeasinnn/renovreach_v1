@@ -4,10 +4,10 @@ import { useEffect, useState } from 'react'
 
 import { Button } from '../components/Button'
 import { Logo } from '../components/Logo'
-import { nav } from '../content'
+import { legalPages, nav } from '../content'
 import { cx } from '../lib/cx'
 
-export function Nav() {
+export function Nav({ home = true }: { home?: boolean }) {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
 
@@ -36,13 +36,13 @@ export function Nav() {
       )}
     >
       <nav className="mx-auto flex h-16 w-full max-w-[1160px] items-center justify-between gap-4 px-5 sm:px-8">
-        <Logo />
+        <Logo home={home} />
 
         <ul className="hidden items-center gap-0.5 md:flex">
           {nav.links.map((link) => (
             <li key={link.label}>
               <a
-                href={link.href}
+                href={home ? link.href : `/${link.href}`}
                 className="inline-flex h-9 items-center rounded-[9px] px-3 text-[14px] font-medium text-muted transition-colors hover:bg-surface-2 hover:text-fg"
               >
                 {link.label}
@@ -95,12 +95,12 @@ export function Nav() {
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden border-t border-line bg-white md:hidden"
           >
-            <div className="mx-auto w-full max-w-[1160px] px-5 py-4 sm:px-8">
+            <div className="mx-auto max-h-[calc(100dvh-4rem)] w-full max-w-[1160px] overflow-y-auto px-5 py-4 sm:px-8">
               <ul className="flex flex-col">
                 {nav.links.map((link) => (
                   <li key={link.label}>
                     <a
-                      href={link.href}
+                      href={home ? link.href : `/${link.href}`}
                       onClick={() => setOpen(false)}
                       className="flex h-12 items-center rounded-[10px] px-3 text-[16px] font-medium text-fg transition-colors hover:bg-surface-2"
                     >
@@ -109,7 +109,22 @@ export function Nav() {
                   </li>
                 ))}
               </ul>
-              <div className="mt-3 border-t border-line pt-3">
+              <div className="mt-2 border-t border-line pt-2">
+                <ul className="flex flex-col">
+                  {legalPages.map((page) => (
+                    <li key={page.href}>
+                      <a
+                        href={page.href}
+                        onClick={() => setOpen(false)}
+                        className="flex h-10 items-center rounded-[10px] px-3 text-[14px] text-muted transition-colors hover:bg-surface-2 hover:text-fg"
+                      >
+                        {page.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="mt-2 border-t border-line pt-3">
                 <Button
                   href={nav.demo.href}
                   target="_blank"

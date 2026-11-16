@@ -32,6 +32,8 @@ export function HowItWorks() {
 
   return (
     <section id="how" className="scroll-mt-24 py-20 sm:py-28">
+      {/* Alias so the footer's #how-it-works link lands here too. */}
+      <span id="how-it-works" aria-hidden className="block scroll-mt-24" />
       <Container>
         <Reveal className="mx-auto max-w-2xl text-center">
           <h2 className="text-balance text-[30px] font-semibold leading-[1.1] tracking-[-0.03em] sm:text-[40px]">

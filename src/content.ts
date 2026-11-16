@@ -5,6 +5,20 @@
 // and email review requests, review management, automated follow-ups and
 // customer campaigns. No integrations, AI features or extra pricing tiers.
 
+// DEMO VALUES: replace with real details when available.
+// Empty fields are hidden automatically.
+export const COMPANY = {
+  registeredName: 'RenovReach Ltd',
+  registeredIn: 'England and Wales',
+  companyNumber: '00000000',
+  registeredOffice: '10 Example Street, London, EC1A 1AA, United Kingdom',
+  location: 'London, United Kingdom',
+  phone: '+44 20 7946 0000',
+  vatNumber: 'GB 000 0000 00',
+  hours: 'Mon-Fri, 9:00-17:00 (GMT)',
+  email: 'contact@renovreach.com',
+}
+
 export const brand = {
   name: 'RenovReach',
   tagline: 'Customer engagement and reputation management for service businesses.',
@@ -15,6 +29,16 @@ export const booking = {
   label: 'Book a Demo',
   href: 'https://cal.com/renov-reach/review',
 }
+
+// One contact address for support, billing, privacy and legal questions.
+export const email = COMPANY.email
+
+export const legalPages = [
+  { label: 'Terms of Service', footerLabel: 'Terms', href: '/terms' },
+  { label: 'Privacy Policy', footerLabel: 'Privacy', href: '/privacy' },
+  { label: 'Refund & Cancellation Policy', footerLabel: 'Refund & Cancellation', href: '/refund-policy' },
+  { label: 'Contact', footerLabel: 'Contact', href: '/contact' },
+]
 
 export const nav = {
   links: [
@@ -215,10 +239,14 @@ export const cta = {
 
 export const footer = {
   tagline: brand.tagline,
-  links: nav.links,
-  legal: [
-    { label: 'Privacy', href: '#privacy' },
-    { label: 'Terms', href: '#terms' },
+  product: [
+    { label: 'Features', href: '#features' },
+    { label: 'How It Works', href: '#how-it-works' },
+    { label: 'Pricing', href: '#pricing' },
+    { label: 'FAQ', href: '#faq' },
   ],
-  copyright: `© ${new Date().getFullYear()} RenovReach`,
+  legal: legalPages.filter((page) => page.href !== '/contact'),
+  contact: legalPages[legalPages.length - 1],
+  copyright: '© 2026 RenovReach. All rights reserved.',
+  badge: 'V1 Coming Soon',
 }
