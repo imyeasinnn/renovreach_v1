@@ -44,7 +44,7 @@ export function Contact() {
         <div className="mt-9 grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
           <div className="rounded-card border border-line bg-surface-2/70 p-6">
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-accent-ink">Contact details</p>
-            <BusinessDetails className="mt-3" showLegal={false} />
+            <BusinessDetails className="mt-3" showLegal={false} showPhone={false} showHours={false} />
 
             <p className="mt-4 text-[13.5px] leading-relaxed text-muted">We reply within 1-2 business days.</p>
 

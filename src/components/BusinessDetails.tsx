@@ -35,10 +35,14 @@ export function BusinessDetails({
   tone = 'light',
   className,
   showLegal = true,
+  showPhone = true,
+  showHours = true,
 }: {
   tone?: 'light' | 'dark'
   className?: string
   showLegal?: boolean
+  showPhone?: boolean
+  showHours?: boolean
 }) {
   const onDark = tone === 'dark'
   const row = cx('flex items-start gap-2 text-[12.5px] leading-snug', onDark ? 'text-[#a9b9b2]' : 'text-muted')
@@ -66,7 +70,7 @@ export function BusinessDetails({
           </li>
         )}
 
-        {COMPANY.phone && (
+        {showPhone && COMPANY.phone && (
           <li className={row}>
             <Phone aria-hidden className={icon} strokeWidth={1.9} />
             <a href={`tel:${COMPANY.phone.replace(/[^\d+]/g, '')}`} className={link}>
@@ -82,7 +86,7 @@ export function BusinessDetails({
           </a>
         </li>
 
-        {COMPANY.hours && (
+        {showHours && COMPANY.hours && (
           <li className={row}>
             <Clock aria-hidden className={icon} strokeWidth={1.9} />
             <span>{COMPANY.hours}</span>
