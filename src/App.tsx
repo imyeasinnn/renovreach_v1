@@ -10,6 +10,7 @@ import { Features } from './sections/Features'
 import { Footer } from './sections/Footer'
 import { Hero } from './sections/Hero'
 import { HowItWorks } from './sections/HowItWorks'
+import { Integrations } from './sections/Integrations'
 import { Nav } from './sections/Nav'
 import { Pricing } from './sections/Pricing'
 import { Problem } from './sections/Problem'
@@ -60,6 +61,7 @@ function Home() {
   return (
     <>
       <Hero />
+      <Integrations />
       <Problem />
       <Features />
       <HowItWorks />

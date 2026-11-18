@@ -94,48 +94,63 @@ export const featureFlow = {
   manualLabel: 'You do this',
   replayLabel: 'Replay',
   nodes: {
-    added: {
+    manual: {
       step: 0,
+      title: 'Add customer manually',
+      description: 'Name, phone, email and service.',
+    },
+    upload: {
+      step: 0,
+      title: 'Upload CSV or Excel',
+      description: 'CSV or Excel file.',
+    },
+    cleanup: {
+      step: 1,
+      title: 'Automatic clean-up',
+      description: 'Columns matched, duplicates removed.',
+    },
+    added: {
+      step: 2,
       title: 'Job added',
       description: 'Customer and service details saved.',
     },
     completed: {
-      step: 1,
+      step: 3,
       title: 'Job completed',
       description: 'You mark the job as completed.',
     },
     confirmed: {
-      step: 2,
+      step: 4,
       title: 'Completion confirmed',
       description: 'The job is confirmed and the automation starts.',
     },
     sms: {
-      step: 3,
+      step: 5,
       title: 'SMS review request',
       description: 'Sent automatically to the customer.',
     },
     email: {
-      step: 3,
+      step: 5,
       title: 'Email review request',
       description: 'Sent automatically to the customer.',
     },
     followUp: {
-      step: 4,
+      step: 6,
       title: 'Automated follow-up',
       description: 'A follow-up goes out if the customer hasn’t left a review.',
     },
     received: {
-      step: 5,
+      step: 7,
       title: 'Review received',
       description: 'A new review appears in your dashboard.',
     },
     manage: {
-      step: 6,
+      step: 8,
       title: 'Review management',
       description: 'See and manage all your reviews in one place.',
     },
     repeat: {
-      step: 7,
+      step: 9,
       title: 'Repeat business',
       description: 'Reach past customers with SMS and email marketing campaigns.',
     },
@@ -144,27 +159,46 @@ export const featureFlow = {
 
 export const howItWorks = {
   title: 'How RenovReach works',
-  description: 'From finished job to 5-star review in three simple steps.',
+  description: 'Add your customers once. Everything after the job runs automatically.',
   steps: [
     {
       number: '1',
-      title: 'Add your customers and service details.',
-      description: 'Enter who the customer is and what work you’re doing. It takes under a minute.',
+      title: 'Add your customers',
+      description: 'Add them one by one, or upload a CSV or Excel file of past customers.',
     },
     {
       number: '2',
-      title: 'Mark jobs as completed.',
-      description: 'When the work is done, one click confirms the job is finished.',
+      title: 'We clean up your list automatically',
+      description: 'RenovReach checks your file and organizes it before anything is sent.',
     },
     {
       number: '3',
-      title: 'RenovReach automatically sends review requests and follow-ups.',
-      description:
-        'Your customer gets a text and an email asking for a review, plus follow-ups, without you lifting a finger.',
+      title: 'Mark jobs as completed',
+      description: 'One click when the work is done.',
+    },
+    {
+      number: '4',
+      title: 'Reviews and follow-ups go out automatically',
+      description: 'RenovReach sends SMS and email review requests and follow-ups for you.',
     },
   ],
-  summary: ['Job done', 'Customer notified', 'Review collected', 'Customer follow-up'],
-  payoff: 'That’s it. Reviews and repeat business, on autopilot.',
+}
+
+export const cleaning = {
+  title: 'How your past customer list is cleaned',
+  stages: [
+    { title: 'Upload', description: 'CSV or Excel file.' },
+    { title: 'Match columns', description: 'Name, phone, email, and service are detected and mapped.' },
+    { title: 'Clean up', description: 'Extra spaces fixed and phone numbers standardized.' },
+    {
+      title: 'Check',
+      description:
+        'Duplicates removed. Rows with missing or invalid phone or email are flagged for review.',
+    },
+    { title: 'Ready', description: 'Clean customers added to your customer list.' },
+  ],
+  notice: 'Only import customers you have permission to contact. You are responsible for consent.',
+  fileTypes: 'Supported file types: CSV and Excel.',
 }
 
 export const showcase = {

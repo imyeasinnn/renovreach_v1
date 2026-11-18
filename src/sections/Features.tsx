@@ -5,6 +5,8 @@ import {
   ChevronDown,
   ChevronRight,
   CircleCheck,
+  ClipboardList,
+  Eraser,
   ListChecks,
   Mail,
   Megaphone,
@@ -13,6 +15,7 @@ import {
   RotateCcw,
   Send,
   Star,
+  Upload,
   UserPlus,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -24,11 +27,13 @@ import { cx } from '../lib/cx'
 
 type NodeId = keyof typeof featureFlow.nodes
 
-const TOTAL_STEPS = 8
-const FINAL_STEP = TOTAL_STEPS
+const TOTAL_STEPS = 10
 
 const icons: Record<NodeId, LucideIcon> = {
-  added: UserPlus,
+  manual: UserPlus,
+  upload: Upload,
+  cleanup: Eraser,
+  added: ClipboardList,
   completed: CircleCheck,
   confirmed: BadgeCheck,
   sms: MessageSquare,
@@ -38,6 +43,9 @@ const icons: Record<NodeId, LucideIcon> = {
   manage: ListChecks,
   repeat: Megaphone,
 }
+
+const lineClass = (on: boolean) =>
+  cx('transition-[stroke] duration-500', on ? 'stroke-accent' : 'stroke-white/10')
 
 function nodeState(id: NodeId, shown: number) {
   const { step } = featureFlow.nodes[id]
@@ -64,7 +72,7 @@ function NodeCard({
   const node = featureFlow.nodes[id]
   const Icon = icons[id]
   const { show, active, done } = nodeState(id, shown)
-  const isManual = id === 'completed'
+  const tag = id === 'completed' ? featureFlow.manualLabel : id === 'manual' ? null : featureFlow.automaticLabel
 
   return (
     <motion.article
@@ -105,17 +113,19 @@ function NodeCard({
         >
           <Icon className={compact ? 'size-3' : 'size-3.5 sm:size-4'} strokeWidth={1.9} />
         </span>
-        <span
-          className={cx(
-            'round mt-0.5 shrink-0 px-1.5 py-0.5 font-semibold uppercase',
-            compact ? 'text-[8px] tracking-[0.06em]' : 'text-[9px] tracking-[0.08em]',
-            isManual
-              ? 'bg-accent text-[#04231a]'
-              : 'border border-accent/20 bg-accent/[0.06] text-[#7fd3b0]',
-          )}
-        >
-          {isManual ? featureFlow.manualLabel : featureFlow.automaticLabel}
-        </span>
+        {tag && (
+          <span
+            className={cx(
+              'round mt-0.5 shrink-0 px-1.5 py-0.5 font-semibold uppercase',
+              compact ? 'text-[8px] tracking-[0.06em]' : 'text-[9px] tracking-[0.08em]',
+              id === 'completed'
+                ? 'bg-accent text-[#04231a]'
+                : 'border border-accent/20 bg-accent/[0.06] text-[#7fd3b0]',
+            )}
+          >
+            {tag}
+          </span>
+        )}
       </div>
 
       <h3
@@ -126,20 +136,21 @@ function NodeCard({
       >
         {node.title}
       </h3>
-      <p
-        className={cx(
-          'mt-1 leading-snug text-[#8fa79c]',
-          compact ? 'text-[10.5px]' : 'text-[11.5px]',
-        )}
-      >
-        {node.description}
-      </p>
+      {node.description && (
+        <p
+          className={cx(
+            'mt-1 leading-snug text-[#8fa79c]',
+            compact ? 'text-[10.5px]' : 'text-[11.5px]',
+          )}
+        >
+          {node.description}
+        </p>
+      )}
 
       {id === 'completed' && <CompletedMock shown={shown} reduce={reduce} />}
       {id === 'received' && <ReviewMock show={nodeState('received', shown).show} reduce={reduce} />}
       {(id === 'sms' || id === 'email') && (
         <BranchBubble
-          key={id}
           icon={id === 'sms' ? MessageSquare : Mail}
           show={nodeState(id, shown).active}
           reduce={reduce}
@@ -245,7 +256,7 @@ function BranchBubble({
 
 function DesktopConnector({ filled }: { filled: boolean }) {
   return (
-    <div aria-hidden className="relative hidden h-6 self-center lg:block">
+    <div aria-hidden className="relative h-6 self-center">
       <span className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-white/[0.12]" />
       <span
         className={cx(
@@ -263,7 +274,144 @@ function DesktopConnector({ filled }: { filled: boolean }) {
   )
 }
 
+/* One SVG path per connector; `on` recolours it as the flow advances. */
+function FlowLine({
+  d,
+  on,
+  viewBox = '0 0 100 100',
+  className,
+  glow = false,
+}: {
+  d: string
+  on: boolean
+  viewBox?: string
+  className?: string
+  glow?: boolean
+}) {
+  return (
+    <svg
+      aria-hidden
+      viewBox={viewBox}
+      preserveAspectRatio="none"
+      className={cx('absolute left-0 right-0 top-0 w-full', className)}
+      fill="none"
+    >
+      <path
+        d={d}
+        strokeWidth="1.5"
+        vectorEffect="non-scaling-stroke"
+        className={lineClass(on)}
+        style={glow && on ? { filter: 'drop-shadow(0 0 4px rgb(16 185 129 / 0.55))' } : undefined}
+      />
+    </svg>
+  )
+}
+
 /* ---------- Mobile flow ---------- */
+
+function Rail({ lit, dotTop = 'top-2' }: { lit: boolean; dotTop?: string }) {
+  return (
+    <>
+      <span aria-hidden className="absolute left-[13px] top-0 h-full w-px bg-white/10" />
+      <motion.span
+        aria-hidden
+        initial={false}
+        animate={{ scaleY: lit ? 1 : 0 }}
+        transition={{ duration: 0.45, ease: 'easeOut' }}
+        className="absolute left-[13px] top-0 h-full w-px origin-top bg-accent shadow-[0_0_12px_rgb(16_185_129/0.6)]"
+      />
+      <span
+        aria-hidden
+        className={cx(
+          'absolute left-[9px] size-2 rounded-full border transition-colors duration-300',
+          dotTop,
+          lit ? 'border-accent bg-accent' : 'border-white/25 bg-[#0a1712]',
+        )}
+      />
+    </>
+  )
+}
+
+/* Two entry paths (manual, or upload then clean-up) that fork off the rail
+   and merge back into Job added. */
+function MobileEntry({ shown, reduce }: { shown: number; reduce: boolean }) {
+  const lit = shown >= 0
+  const uploaded = shown >= 1
+  const merged = shown >= 2
+
+  return (
+    <div className="relative pb-4 pl-11">
+      <Rail lit={lit} />
+
+      <div className="relative pt-8">
+        {/* Fork from the rail into both columns */}
+        <FlowLine
+          d="M 0 10 H 75 M 25 10 V 32 M 75 10 V 32"
+          on={lit}
+          viewBox="0 0 100 32"
+          className="h-8"
+        />
+        <span
+          aria-hidden
+          className={cx(
+            'absolute -left-[31px] top-2.5 h-px w-[31px] transition-colors duration-500',
+            lit ? 'bg-accent' : 'bg-white/10',
+          )}
+        />
+
+        <div className="grid grid-cols-2 items-stretch gap-2.5">
+          <div className="flex flex-col">
+            <NodeCard id="manual" shown={shown} reduce={reduce} compact />
+            <div aria-hidden className="relative min-h-4 flex-1">
+              <span
+                className={cx(
+                  'absolute bottom-0 left-1/2 top-0 w-px -translate-x-1/2 transition-colors duration-500',
+                  merged ? 'bg-accent' : 'bg-white/[0.12]',
+                )}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <NodeCard id="upload" shown={shown} reduce={reduce} compact />
+            <div aria-hidden className="relative flex h-4 items-center justify-center">
+              <span
+                className={cx(
+                  'absolute inset-y-0 w-px transition-colors duration-500',
+                  uploaded ? 'bg-accent' : 'bg-white/[0.12]',
+                )}
+              />
+              <ChevronDown
+                className={cx(
+                  'relative size-3 transition-colors duration-500',
+                  uploaded ? 'text-accent' : 'text-white/25',
+                )}
+              />
+            </div>
+            <NodeCard id="cleanup" shown={shown} reduce={reduce} compact />
+          </div>
+        </div>
+
+        {/* Merge both columns into one stem above Job added */}
+        {/* Pulled up so the stem meets the Job added card below. */}
+        <div className="relative -mb-7 h-10" aria-hidden>
+          <FlowLine
+            d="M 25 0 V 20 H 75 M 75 0 V 20 M 50 20 V 40"
+            on={merged}
+            viewBox="0 0 100 40"
+            className="h-10"
+          />
+          <ChevronDown
+            className={cx(
+              'absolute bottom-0 left-1/2 size-3 -translate-x-1/2 transition-colors duration-500',
+              merged ? 'text-accent' : 'text-white/25',
+            )}
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
 
 function MobileNode({
   id,
@@ -274,25 +422,11 @@ function MobileNode({
   shown: number
   reduce: boolean
 }) {
-  const { show } = nodeState(id, shown)
+  const show = shown >= featureFlow.nodes[id].step
 
   return (
     <div className="relative pb-4 pl-11">
-      <span aria-hidden className="absolute left-[13px] top-0 h-full w-px bg-white/10" />
-      <motion.span
-        aria-hidden
-        initial={false}
-        animate={{ scaleY: show ? 1 : 0 }}
-        transition={{ duration: 0.45, ease: 'easeOut' }}
-        className="absolute left-[13px] top-0 h-full w-px origin-top bg-accent shadow-[0_0_12px_rgb(16_185_129/0.6)]"
-      />
-      <span
-        aria-hidden
-        className={cx(
-          'absolute left-[9px] top-6 size-2 rounded-full border transition-colors duration-300',
-          show ? 'border-accent bg-accent' : 'border-white/25 bg-[#0a1712]',
-        )}
-      />
+      <Rail lit={show} dotTop="top-6" />
       <div className="pt-3">
         <NodeCard id={id} shown={shown} reduce={reduce} />
       </div>
@@ -306,45 +440,16 @@ function MobileFork({ shown, reduce }: { shown: number; reduce: boolean }) {
 
   return (
     <div className="relative pb-4 pl-11">
-      <span aria-hidden className="absolute left-[13px] top-0 h-full w-px bg-white/10" />
-      <motion.span
-        aria-hidden
-        initial={false}
-        animate={{ scaleY: lit ? 1 : 0 }}
-        transition={{ duration: 0.45, ease: 'easeOut' }}
-        className="absolute left-[13px] top-0 h-full w-px origin-top bg-accent shadow-[0_0_12px_rgb(16_185_129/0.6)]"
-      />
-      <span
-        aria-hidden
-        className={cx(
-          'absolute left-[9px] top-2 size-2 rounded-full border transition-colors duration-300',
-          lit ? 'border-accent bg-accent' : 'border-white/25 bg-[#0a1712]',
-        )}
-      />
+      <Rail lit={lit} />
 
       <div className="relative pt-8">
         {/* Split into SMS and email */}
-        <svg
-          aria-hidden
+        <FlowLine
+          d="M 0 10 H 75 M 25 10 V 32 M 75 10 V 32"
+          on={lit}
           viewBox="0 0 100 32"
-          preserveAspectRatio="none"
-          className="absolute left-0 right-0 top-0 h-8 w-full"
-          fill="none"
-        >
-          <path
-            d="M 0 10 H 75 M 25 10 V 32 M 75 10 V 32"
-            stroke="rgb(255 255 255 / 0.12)"
-            strokeWidth="1"
-            vectorEffect="non-scaling-stroke"
-          />
-          <path
-            d="M 0 10 H 75 M 25 10 V 32 M 75 10 V 32"
-            stroke="#10b981"
-            strokeWidth="1.5"
-            vectorEffect="non-scaling-stroke"
-            className={cx('transition-opacity duration-500', lit ? 'opacity-100' : 'opacity-0')}
-          />
-        </svg>
+          className="h-8"
+        />
         <span
           aria-hidden
           className={cx(
@@ -360,27 +465,12 @@ function MobileFork({ shown, reduce }: { shown: number; reduce: boolean }) {
 
         {/* Merge back into the main line */}
         <div className="relative h-8">
-          <svg
-            aria-hidden
+          <FlowLine
+            d="M 25 0 V 22 M 75 0 V 22 M 0 22 H 75"
+            on={merged}
             viewBox="0 0 100 32"
-            preserveAspectRatio="none"
-            className="absolute left-0 right-0 top-0 h-8 w-full"
-            fill="none"
-          >
-            <path
-              d="M 25 0 V 22 M 75 0 V 22 M 0 22 H 75"
-              stroke="rgb(255 255 255 / 0.12)"
-              strokeWidth="1"
-              vectorEffect="non-scaling-stroke"
-            />
-            <path
-              d="M 25 0 V 22 M 75 0 V 22 M 0 22 H 75"
-              stroke="#10b981"
-              strokeWidth="1.5"
-              vectorEffect="non-scaling-stroke"
-              className={cx('transition-opacity duration-500', merged ? 'opacity-100' : 'opacity-0')}
-            />
-          </svg>
+            className="h-8"
+          />
           <span
             aria-hidden
             className={cx(
@@ -406,7 +496,7 @@ export function Features() {
   useEffect(() => {
     if (!inView) return
     if (reduce) {
-      setStep(FINAL_STEP)
+      setStep(TOTAL_STEPS)
       return
     }
 
@@ -417,7 +507,7 @@ export function Features() {
     return () => timers.forEach((timer) => window.clearTimeout(timer))
   }, [inView, reduce, run])
 
-  const shown = reduce ? FINAL_STEP : step
+  const shown = reduce ? TOTAL_STEPS : step
   const closing = shown >= TOTAL_STEPS - 1
 
   return (
@@ -452,14 +542,42 @@ export function Features() {
             <div ref={flowRef} className="mt-10 sm:mt-12">
               {/* Desktop: two rows with a curve between them */}
               <div className="hidden lg:block">
-                <div className="grid grid-cols-[1fr_28px_1fr_28px_1fr_28px_1.35fr_28px_1fr] items-center">
+                {/* Two ways in, merging into Job added */}
+                <div className="relative max-w-[520px]">
+                  <div className="grid grid-cols-[1fr_28px_1fr_28px_1fr] items-stretch">
+                    <NodeCard id="manual" shown={shown} reduce={reduce} compact />
+                    <div aria-hidden />
+                    <NodeCard id="upload" shown={shown} reduce={reduce} compact />
+                    <DesktopConnector filled={shown >= 1} />
+                    <NodeCard id="cleanup" shown={shown} reduce={reduce} compact />
+                  </div>
+
+                  {/* The 520px grid's card centres sit at 77px and 463px. */}
+                  <div className="relative h-12" aria-hidden>
+                    <FlowLine
+                      d="M 77 0 V 48 M 463 0 V 16 H 77"
+                      on={shown >= 2}
+                      viewBox="0 0 520 48"
+                      className="h-full"
+                    />
+                    <ChevronDown
+                      className={cx(
+                        'absolute bottom-0 size-3 -translate-x-1/2 transition-colors duration-300',
+                        shown >= 2 ? 'text-accent' : 'text-white/25',
+                      )}
+                      style={{ left: '14.8%' }}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-[1fr_28px_1fr_28px_1fr_28px_1.35fr_28px_1fr]">
                   <NodeCard id="added" shown={shown} reduce={reduce} />
-                  <DesktopConnector filled={shown >= 1} />
+                  <DesktopConnector filled={shown >= 3} />
                   <NodeCard id="completed" shown={shown} reduce={reduce} />
-                  <DesktopConnector filled={shown >= 2} />
+                  <DesktopConnector filled={shown >= 4} />
                   <NodeCard id="confirmed" shown={shown} reduce={reduce} />
 
-                  <DesktopConnector filled={shown >= 3} />
+                  <DesktopConnector filled={shown >= 5} />
 
                   {/* Fork: SMS above email */}
                   <div className="relative px-4">
@@ -467,14 +585,14 @@ export function Features() {
                       aria-hidden
                       className={cx(
                         'absolute left-0 top-[24%] bottom-[24%] w-4 rounded-l-[4px] border-y border-l transition-colors duration-500',
-                        shown >= 3 ? 'border-accent/60' : 'border-white/[0.12]',
+                        shown >= 5 ? 'border-accent/60' : 'border-white/[0.12]',
                       )}
                     />
                     <span
                       aria-hidden
                       className={cx(
                         'absolute right-0 top-[24%] bottom-[24%] w-4 rounded-r-[4px] border-y border-r transition-colors duration-500',
-                        shown >= 4 ? 'border-accent/60' : 'border-white/[0.12]',
+                        shown >= 6 ? 'border-accent/60' : 'border-white/[0.12]',
                       )}
                     />
                     <div className="grid grid-rows-2 gap-3">
@@ -483,55 +601,39 @@ export function Features() {
                     </div>
                   </div>
 
-                  <DesktopConnector filled={shown >= 4} />
+                  <DesktopConnector filled={shown >= 6} />
                   <NodeCard id="followUp" shown={shown} reduce={reduce} />
                 </div>
 
                 {/* Curved connector from the end of row one back to row two */}
                 <div className="relative h-16" aria-hidden>
-                  <svg
-                    viewBox="0 0 100 100"
-                    preserveAspectRatio="none"
-                    className="h-full w-full"
-                    fill="none"
-                  >
-                    <path
-                      d="M 90 0 C 90 66, 16 24, 16 94"
-                      stroke="rgb(255 255 255 / 0.12)"
-                      strokeWidth="1"
-                      vectorEffect="non-scaling-stroke"
-                    />
-                    <motion.path
-                      d="M 90 0 C 90 66, 16 24, 16 94"
-                      stroke="#10b981"
-                      strokeWidth="1.5"
-                      vectorEffect="non-scaling-stroke"
-                      initial={{ pathLength: 0 }}
-                      animate={{ pathLength: shown >= 5 ? 1 : 0 }}
-                      transition={{ duration: 0.5, ease: 'easeInOut' }}
-                      style={{ filter: 'drop-shadow(0 0 4px rgb(16 185 129 / 0.55))' }}
-                    />
-                  </svg>
+                  <FlowLine
+                    d="M 90 0 C 90 66, 16 24, 16 94"
+                    on={shown >= 7}
+                    className="h-full"
+                    glow
+                  />
                   <ChevronDown
                     className={cx(
                       'absolute bottom-0 size-3 -translate-x-1/2 transition-colors duration-300',
-                      shown >= 5 ? 'text-accent' : 'text-white/25',
+                      shown >= 7 ? 'text-accent' : 'text-white/25',
                     )}
                     style={{ left: '16%' }}
                   />
                 </div>
 
-                <div className="grid grid-cols-[1fr_28px_1fr_28px_1fr] items-center">
+                <div className="grid grid-cols-[1fr_28px_1fr_28px_1fr]">
                   <NodeCard id="received" shown={shown} reduce={reduce} />
-                  <DesktopConnector filled={shown >= 6} />
+                  <DesktopConnector filled={shown >= 8} />
                   <NodeCard id="manage" shown={shown} reduce={reduce} />
-                  <DesktopConnector filled={shown >= 7} />
+                  <DesktopConnector filled={shown >= 9} />
                   <NodeCard id="repeat" shown={shown} reduce={reduce} />
                 </div>
               </div>
 
               {/* Tablet and mobile: vertical flow with a rail */}
-              <div className="lg:hidden">
+              <div className="mx-auto max-w-[540px] lg:hidden">
+                <MobileEntry shown={shown} reduce={reduce} />
                 <MobileNode id="added" shown={shown} reduce={reduce} />
                 <MobileNode id="completed" shown={shown} reduce={reduce} />
                 <MobileNode id="confirmed" shown={shown} reduce={reduce} />
