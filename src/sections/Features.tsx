@@ -21,6 +21,7 @@ import {
 import type { LucideIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
+import { Button } from '../components/Button'
 import { Container } from '../components/Container'
 import { featureFlow } from '../content'
 import { cx } from '../lib/cx'
@@ -656,14 +657,15 @@ export function Features() {
 
             {!reduce && (
               <div className="mt-5 flex justify-center">
-                <button
+                <Button
                   type="button"
+                  variant="secondary"
+                  size="sm"
                   onClick={() => setRun((value) => value + 1)}
-                  className="inline-flex h-9 items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-3.5 text-[12px] font-medium text-[#cfe2d8] transition-colors hover:border-accent/40 hover:bg-accent/10 hover:text-white"
                 >
-                  <RotateCcw className="size-3.5" />
+                  <RotateCcw />
                   {featureFlow.replayLabel}
-                </button>
+                </Button>
               </div>
             )}
           </div>

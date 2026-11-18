@@ -62,7 +62,6 @@ export function Hero() {
               className="w-full sm:w-auto"
             >
               {hero.cta.label}
-              <ArrowRight />
             </Button>
           </motion.div>
 

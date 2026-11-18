@@ -1,4 +1,4 @@
-import { ArrowRight, Check, Info } from 'lucide-react'
+import { Check, Info } from 'lucide-react'
 
 import { Button } from '../components/Button'
 import { Container } from '../components/Container'
@@ -42,7 +42,6 @@ export function Pricing() {
                 className="mt-6 w-full"
               >
                 {pricing.cta.label}
-                <ArrowRight />
               </Button>
 
               <div className="mt-7 border-t border-line pt-6">

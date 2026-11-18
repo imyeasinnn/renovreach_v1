@@ -1,85 +1,154 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { Menu, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type MouseEvent } from 'react'
 
 import { Button } from '../components/Button'
 import { Logo } from '../components/Logo'
-import { legalPages, nav } from '../content'
+import { nav } from '../content'
 import { cx } from '../lib/cx'
 
 export function Nav({ home = true }: { home?: boolean }) {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
+  const [active, setActive] = useState<string | null>(null)
 
+  // One passive scroll listener drives both the compact state and the spy: a
+  // section is current once its top has passed under the floating bar.
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8)
+    const ids = home ? nav.links.map((link) => link.href.slice(1)) : []
+    const onScroll = () => {
+      setScrolled(window.scrollY > 40)
+      let current: string | null = null
+      for (const id of ids) {
+        const el = document.getElementById(id)
+        // Anchored sections land at 184px (scroll margin + padding), so the
+        // spy has to accept a section before it reaches the very top.
+        if (el && el.getBoundingClientRect().top <= 200) current = id
+      }
+      setActive(current)
+    }
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
-  useEffect(() => {
-    document.body.style.overflow = open ? 'hidden' : ''
+    window.addEventListener('resize', onScroll)
     return () => {
-      document.body.style.overflow = ''
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
     }
-  }, [open])
+  }, [home])
+
+  // The menu's exit animation cancels a native smooth scroll to a distant
+  // section, so close the panel first and scroll once it has collapsed.
+  const goToSection = (event: MouseEvent<HTMLAnchorElement>, href: string) => {
+    setOpen(false)
+    if (!home || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+    const target = document.getElementById(href.slice(1))
+    if (!target) return
+    event.preventDefault()
+    window.setTimeout(() => {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      history.pushState(null, '', href)
+    }, 300)
+  }
+
+  const solid = scrolled || open
 
   return (
-    <header
-      id="top"
-      className={cx(
-        'fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,box-shadow] duration-300',
-        scrolled || open
-          ? 'border-b border-line bg-white/88 shadow-[0_8px_30px_-24px_rgb(4_60_40/0.4)] backdrop-blur-xl'
-          : 'border-b border-transparent bg-white/70 backdrop-blur-sm',
-      )}
-    >
-      <nav className="mx-auto flex h-16 w-full max-w-[1160px] items-center justify-between gap-4 px-5 sm:px-8">
-        <Logo home={home} />
+    <header id="top" className="fixed inset-x-0 top-0 z-50 px-4 pt-4 sm:px-6">
+      <nav
+        className={cx(
+          'mx-auto grid w-full max-w-[1200px] grid-cols-[1fr_auto] items-center gap-3 rounded-[20px] border px-4 backdrop-blur-[14px] transition-[height,background-color,border-color,box-shadow] duration-300 max-[360px]:px-3 sm:rounded-full sm:px-5 min-[769px]:grid-cols-[1fr_auto_1fr]',
+          solid
+            ? 'h-[60px] border-[rgb(16_185_129/0.26)] bg-[rgb(13_26_20/0.88)] shadow-[0_18px_50px_-24px_rgb(0_0_0/0.9)]'
+            : 'h-[68px] border-[rgb(16_185_129/0.18)] bg-[rgb(13_26_20/0.7)] shadow-[0_12px_40px_-22px_rgb(0_0_0/0.8)]',
+        )}
+      >
+        <Logo
+          home={home}
+          tone="dark"
+          className="max-[360px]:gap-2 max-[360px]:[&_img]:h-6 max-[360px]:[&_span]:text-[14px]"
+        />
 
-        <ul className="hidden items-center gap-0.5 md:flex">
-          {nav.links.map((link) => (
-            <li key={link.label}>
-              <a
-                href={home ? link.href : `/${link.href}`}
-                className="inline-flex h-9 items-center rounded-[9px] px-3 text-[14px] font-medium text-muted transition-colors hover:bg-surface-2 hover:text-fg"
-              >
-                {link.label}
-              </a>
-            </li>
-          ))}
+        <ul className="hidden items-center justify-center gap-1 min-[769px]:flex">
+          {nav.links.map((link) => {
+            const id = link.href.slice(1)
+            const isActive = active === id
+            return (
+              <li key={link.label}>
+                <a
+                  href={home ? link.href : `/${link.href}`}
+                  aria-current={isActive ? 'location' : undefined}
+                  className={cx(
+                    'group relative inline-flex h-9 items-center px-3 text-[13.5px] font-medium transition-colors duration-200',
+                    isActive ? 'text-[#34d399]' : 'text-[#a9bdb2] hover:text-[#f3faf6]',
+                  )}
+                >
+                  {link.label}
+                  <span
+                    aria-hidden
+                    className={cx(
+                      'pointer-events-none absolute bottom-0.5 left-1/2 h-px -translate-x-1/2 bg-accent transition-[width] duration-200',
+                      isActive ? 'w-[calc(100%-22px)]' : 'w-0 group-hover:w-[calc(100%-22px)]',
+                    )}
+                  />
+                </a>
+              </li>
+            )
+          })}
         </ul>
 
-        <div className="hidden items-center md:flex">
-          <Button
-            href={nav.demo.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="h-9 rounded-[10px] px-4 text-[13.5px]"
-          >
-            {nav.demo.label}
-          </Button>
-        </div>
+        <div className="flex items-center justify-end gap-2.5">
+          {/* Wrappers rather than a `hidden` class on the button: Button's own
+              `inline-flex` would win the display cascade on mobile. */}
+          <div className="hidden min-[769px]:block">
+            <Button href={nav.demo.href} target="_blank" rel="noopener noreferrer">
+              {nav.demo.label}
+            </Button>
+          </div>
 
-        <div className="flex items-center gap-2 md:hidden">
-          <Button
-            href={nav.demo.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="h-9 rounded-[10px] px-3.5 text-[13px]"
-          >
-            {nav.demo.label}
-          </Button>
+          {/* Mobile keeps the booking CTA in the bar, beside the hamburger.
+              Below 360px the label shortens instead of the row wrapping. */}
+          <div className="min-[769px]:hidden">
+            <Button
+              href={nav.demo.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              size="compact"
+              aria-label={nav.demo.label}
+              className="max-[360px]:px-3"
+            >
+              <span className="max-[360px]:hidden">{nav.demo.label}</span>
+              <span aria-hidden className="hidden max-[360px]:inline">
+                Book Demo
+              </span>
+            </Button>
+          </div>
+
           <button
             type="button"
             aria-label={open ? 'Close menu' : 'Open menu'}
             aria-expanded={open}
             aria-controls="mobile-menu"
             onClick={() => setOpen((v) => !v)}
-            className="grid size-9 place-items-center rounded-[10px] border border-line text-fg transition-colors hover:bg-surface-2"
-          >
-            {open ? <X className="size-4.5" /> : <Menu className="size-4.5" />}
+            className="-mr-1 grid size-10 place-items-center rounded-full text-[#e8f4ee] transition-colors hover:bg-white/[0.07] min-[769px]:hidden">
+            <span aria-hidden className="relative block h-3.5 w-5">
+              <span
+                className={cx(
+                  'absolute left-0 h-[1.5px] w-5 rounded-full bg-current transition-all duration-300',
+                  open ? 'top-1/2 -translate-y-1/2 rotate-45' : 'top-0',
+                )}
+              />
+              <span
+                className={cx(
+                  'absolute left-0 top-1/2 h-[1.5px] w-5 -translate-y-1/2 rounded-full bg-current transition-all duration-300',
+                  open ? 'scale-x-0 opacity-0' : 'opacity-100',
+                )}
+              />
+              <span
+                className={cx(
+                  'absolute bottom-0 left-0 h-[1.5px] w-5 rounded-full bg-current transition-all duration-300',
+                  open ? 'bottom-1/2 translate-y-1/2 -rotate-45' : '',
+                )}
+              />
+            </span>
           </button>
         </div>
       </nav>
@@ -92,49 +161,32 @@ export function Nav({ home = true }: { home?: boolean }) {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden border-t border-line bg-white md:hidden"
+            transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
+            className="mx-auto mt-2 w-full max-w-[1200px] overflow-hidden rounded-[20px] border border-[rgb(16_185_129/0.2)] bg-[rgb(13_26_20/0.92)] shadow-[0_24px_60px_-24px_rgb(0_0_0/0.9)] backdrop-blur-[14px] min-[769px]:hidden"
           >
-            <div className="mx-auto max-h-[calc(100dvh-4rem)] w-full max-w-[1160px] overflow-y-auto px-5 py-4 sm:px-8">
-              <ul className="flex flex-col">
-                {nav.links.map((link) => (
-                  <li key={link.label}>
-                    <a
-                      href={home ? link.href : `/${link.href}`}
-                      onClick={() => setOpen(false)}
-                      className="flex h-12 items-center rounded-[10px] px-3 text-[16px] font-medium text-fg transition-colors hover:bg-surface-2"
-                    >
-                      {link.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-2 border-t border-line pt-2">
-                <ul className="flex flex-col">
-                  {legalPages.map((page) => (
-                    <li key={page.href}>
+            <div className="max-h-[calc(100dvh-6.5rem)] overflow-y-auto p-3">
+              <ul className="flex flex-col gap-0.5">
+                {nav.links.map((link) => {
+                  const isActive = active === link.href.slice(1)
+                  return (
+                    <li key={link.label}>
                       <a
-                        href={page.href}
-                        onClick={() => setOpen(false)}
-                        className="flex h-10 items-center rounded-[10px] px-3 text-[14px] text-muted transition-colors hover:bg-surface-2 hover:text-fg"
+                        href={home ? link.href : `/${link.href}`}
+                        onClick={(event) => goToSection(event, link.href)}
+                        aria-current={isActive ? 'location' : undefined}
+                        className={cx(
+                          'flex h-12 items-center rounded-[14px] px-4 text-[15.5px] font-medium transition-colors',
+                          isActive
+                            ? 'bg-accent/12 text-[#5eead4]'
+                            : 'text-[#e8f4ee] hover:bg-white/[0.06]',
+                        )}
                       >
-                        {page.label}
+                        {link.label}
                       </a>
                     </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="mt-2 border-t border-line pt-3">
-                <Button
-                  href={nav.demo.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full"
-                  onClick={() => setOpen(false)}
-                >
-                  {nav.demo.label}
-                </Button>
-              </div>
+                  )
+                })}
+              </ul>
             </div>
           </motion.div>
         )}

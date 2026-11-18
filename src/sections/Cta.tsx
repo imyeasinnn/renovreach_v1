@@ -1,5 +1,3 @@
-import { ArrowRight } from 'lucide-react'
-
 import { Button } from '../components/Button'
 import { Container } from '../components/Container'
 import { Reveal } from '../components/Reveal'
@@ -36,7 +34,6 @@ export function Cta() {
                 className="mt-8"
               >
                 {cta.button.label}
-                <ArrowRight />
               </Button>
             </div>
           </div>

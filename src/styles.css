@@ -98,7 +98,7 @@
     color: inherit;
   }
   :focus-visible {
-    outline: 2px solid rgb(5 150 105 / 0.55);
+    outline: 2px solid var(--color-accent);
     outline-offset: 3px;
   }
   @media (prefers-reduced-motion: reduce) {
@@ -131,6 +131,39 @@
       inset 0 0 0 1px var(--depth-edge, var(--color-line)),
       inset 0 1px 0 var(--depth-highlight, #fff);
     transition: box-shadow 0.25s;
+  }
+}
+
+/*
+  Primary buttons carry one soft highlight that sweeps across every few
+  seconds, then waits. It pauses while the button is hovered or focused and is
+  removed entirely under reduced motion (the global rule would only speed it up).
+*/
+@keyframes btn-shine {
+  0% {
+    transform: translateX(-180%) skewX(-18deg);
+  }
+  18%,
+  100% {
+    transform: translateX(320%) skewX(-18deg);
+  }
+}
+.btn-shine {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.45), transparent);
+  animation: btn-shine 5.5s ease-in-out infinite;
+  pointer-events: none;
+}
+.group\/btn:hover .btn-shine,
+.group\/btn:focus-visible .btn-shine {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn-shine {
+    display: none;
   }
 }
 
